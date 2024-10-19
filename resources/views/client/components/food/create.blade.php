@@ -304,8 +304,10 @@ function resetCreateForm() {
               document.getElementById(`${field}-error`).innerText = errorMessages[field][0];
             }
           }
+        } else if (error.response && error.response.status === 400) {
+            errorToast(error.response.data.message || "Invalid address or coordinates not found.");
         } else if (error.response && error.response.status === 500) {
-          errorToast(error.response.data.error);
+            errorToast(error.response.data.error);
         } else {
           errorToast("Request failed!");
         }
