@@ -1,53 +1,17 @@
 <section id="landingFeatures" class="section-py landing-features">
   <div class="container">               
-    <div class="app-academy">
-        <div class="card p-0 mb-4">
-          <div class="card-body d-flex flex-column flex-md-row justify-content-between p-0 pt-4">
-            <div class="app-academy-md-25 card-body py-0">
-              <img
-                src="{{ asset('frontend/assets/img/illustrations/bulb-light.png') }}"
-                class="img-fluid app-academy-img-height scaleX-n1-rtl"
-                alt="Bulb in hand"
-                data-app-light-img="illustrations/bulb-light.png"
-                data-app-dark-img="illustrations/bulb-dark.png"
-                height="90" />
-            </div>
-            <div
-              class="app-academy-md-50 card-body d-flex align-items-md-center flex-column text-md-center mb-4">
-              <span class="card-title mb-3 lh-lg px-md-5 display-6 text-heading">
-                Education, talents, and career opportunities.
-                <span class="text-primary text-nowrap">All in one place</span>.
-              </span>
-              <p class="mb-3 px-2">
-                Grow your skill with the most reliable online courses and certifications in marketing,
-                information technology, programming, and data science.
-              </p>
-<!--               <div class="d-flex align-items-center justify-content-between app-academy-md-80">
-                <input type="search" id="search-field1" name="search-field1" value="" placeholder="Find your food" class="form-control me-2" />
-                <button type="submit" class="btn btn-primary btn-icon"><i class="mdi mdi-magnify"></i></button>
-              </div>
-              <div id="search-error1" class="text-danger" style="margin-top: 5px;"></div> -->
-            </div>
-            <div class="app-academy-md-25 d-flex align-items-end justify-content-end">
-              <img
-                src="{{ asset('frontend/assets/img/illustrations/pencil-rocket.png') }}"
-                alt="pencil rocket"
-                height="188"
-                class="scaleX-n1-rtl" />
-            </div>
-          </div>
-        </div> 
+    <div class="app-academy"> 
         <div class="card mb-4">
           <div class="card-header d-flex flex-wrap justify-content-between gap-3">
             <div class="card-title mb-0 me-1">
-              <h5 class="mb-1">All Food List</h5>
-              <p class="mb-0">Total 6 course you have purchased</p>
+              <h5 class="mb-1">Item List</h5>
+              <p class="mb-0">Total 0 items found</p>
             </div>
 
             <div class="d-flex justify-content-md-end align-items-center gap-3 flex-wrap">
               <div class="d-flex align-items-center justify-content-between app-academy-md-80">
                 <input type="search" id="search-field" name="search-field" value="" placeholder="Find your food" class="form-control me-2" />
-                <button type="submit" class="btn btn-primary btn-icon"><i class="mdi mdi-magnify"></i></button>
+                <div id="search-error" class="text-danger"></div>
               </div>
             </div>
           </div>
@@ -77,45 +41,59 @@ function debounce(func, delay) {
     };
 }
 
-async function FoodList(page = 1, date = null, searchQuery = null) {
+async function FoodList(page = 1, searchQuery = null) {
     try {
         let url = `/food-list?page=${page}`;
-        if (date) {
-            url = `/food-list/date/${date}?page=${page}`;
-        }
 
         if (searchQuery) {
-            url = `/search-food?query=${searchQuery}`;  // Use the search endpoint
+            url = `/search-food?query=${searchQuery}`; 
         }
 
         const res = await axios.get(url);
         const data = res.data;
+        //console.log('------',data);
+        const paginationContainer = document.querySelector('.pagination');
 
-        if (searchQuery && data.status === 'success') {
-            const foodData = data.foods;
+        if (data.status === 'success') {
+            const foodData = searchQuery ? data.foods : data.foods.data;
+            const totalItems = data.total;
+
             updateFoodList(foodData);
             clearError();
-        } else if (searchQuery && data.status === 'failed') {
-            displaySearchError(data.message);
-        } else if (data.status === 'success') {
-            const foodData = data.foods.data;
-            updateFoodList(foodData);
-            clearError();
+            updateTotalCount(totalItems);
+
+            if (totalItems === 0) {
+                paginationContainer.innerHTML = ''; 
+            } else if (!searchQuery) {
+                updatePagination(data.foods);
+            }
         } else if (data.status === 'failed') {
             displaySearchError(data.message);
-        }
-
-        if (!searchQuery) {
-            updatePagination(data.foods);
+            paginationContainer.innerHTML = ''; 
         }
 
         // Scroll to the food list section after loading the content
-        //document.getElementById('gried-view').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('gried-view').scrollIntoView({ behavior: 'smooth' });
 
     } catch (error) {
         handleError(error);
     }
 }
+
+function updateTotalCount(totalItems) {
+    const totalItemsElement = document.querySelector('.card-title p.mb-0');
+    
+    if (totalItems > 0) {
+        totalItemsElement.innerHTML = `Total ${totalItems} items found`;
+        totalItemsElement.classList.remove('text-danger'); // Remove 'text-danger' if present
+        totalItemsElement.classList.add('text-success'); // Add green color class
+    } else {
+        totalItemsElement.innerHTML = `No items found`;
+        totalItemsElement.classList.remove('text-success'); // Remove 'text-success' if present
+        totalItemsElement.classList.add('text-danger'); // Add red color class
+    }
+}
+
 
 function updateFoodList(foodData) {
     const gridViewContainer = document.getElementById('gried-view');
@@ -196,33 +174,23 @@ function clearError() {
 }
 
 function handleError(error) {
-    if (error.response) {
-        if (error.response.status === 404) {
-            displaySearchError(error.response.data.message || "Food not found.");
-        } else if (error.response.status === 500) {
-            displaySearchError("An internal server error occurred. Please try again later.");
-        } else {
-            displaySearchError("An unexpected error occurred. Please try again.");
-        }
-    } else {
-        displaySearchError("Failed to connect to the server. Please check your internet connection.");
-    }
+    displaySearchError("An unexpected error occurred. Please try again.");
 }
 
 function loadPage(event, url) {
     event.preventDefault();
-    const dateFilter = document.querySelector('.dropdown-menu .active')?.getAttribute('data-date') || null;
     const searchQuery = document.querySelector('input[name="search-field"]').value || null;
     const page = new URL(url).searchParams.get('page');
-    FoodList(page, dateFilter, searchQuery);
+    FoodList(page, searchQuery);
 }
 
 const debouncedSearch = debounce(function() {
     const searchQuery = document.querySelector('input[name="search-field"]').value || null;
-    FoodList(1, null, searchQuery); // Fetch new search results
-}, 500); // Adjust debounce time as needed
+    FoodList(1, searchQuery); 
+}, 500); 
 
 document.getElementById('search-field').addEventListener('input', debouncedSearch);
+
 </script>
 
 

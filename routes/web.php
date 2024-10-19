@@ -32,6 +32,7 @@ use App\Http\Controllers\Client\ClientNotificationController;
 use App\Http\Controllers\Client\ClientReportController;
 use App\Http\Controllers\Client\ClientComplainController;
 use App\Http\Controllers\Client\ClientTermsConditionsController;
+use App\Http\Controllers\Client\ClientCustomerListController;
 
 // Frontend
 use App\Http\Controllers\Frontend\SocialAuthController;
@@ -74,12 +75,12 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/','HomePage')->name('home');
     Route::get('/setting-list', 'SettingList');
     Route::get('/food-list', 'FoodList');
-    Route::get('/food-list/date/{date}','getAvailableFoodByDate');
     Route::get('/search-food','searchFood');
 
-    Route::get('/food-list-by-location', 'FoodListByLocation');
-    Route::get('/food-list-location/date/{date}','getAvailableFoodByDate');
-    Route::get('/search-food-by-location','searchFood');
+    //Route::get('/food-list/date/{date}','getAvailableFoodByDate');
+    //Route::get('/food-list-by-location', 'FoodListByLocation');
+    //Route::get('/food-list-location/date/{date}','getAvailableFoodByDate');
+    //Route::get('/search-food-by-location','searchFood');
 });
 
 Route::controller(PagesController::class)->group(function () {
@@ -408,7 +409,23 @@ Route::prefix('client')->middleware([ClientTokenVerificationMiddleware::class])-
     Route::controller(ClientTermsConditionsController::class)->group(function () {
         Route::get('/terms-conditions/{name}','TermsConditionsPage');
         Route::get('/terms-conditions/info/{name}','TermsConditionsInfo');
+    });
 
+    Route::controller(ClientCustomerListController::class)->group(function () {
+        Route::get('/customer-list', 'CustomerPage')->name('client.customers');
+        Route::get('/customers','CustomerList');
+
+        Route::get('/customer/details/{customer_id}','CustomerDetailsPage');
+        Route::get('/customer/details/info/{customer_id}','CustomerDetailsInfo');
+
+        Route::get('/order/list/by/customer/{customer_id}','OrderListPageByCustomer');
+        Route::get('/order/list/by/customer/info/{customer_id}','OrderListByCustomer');
+
+        Route::get('/complain/list/by/customer/{customer_id}','ComplainListPageByCustomer');
+        Route::get('/complain/list/by/customer/info/{customer_id}','ComplainListByCustomer');
+
+        Route::get('/client/list/by/customer/{customer_id}','ClientListPageByCustomer');
+        Route::get('/client/list/by/customer/info/{customer_id}','ClientListByCustomer');
     });
 
 });

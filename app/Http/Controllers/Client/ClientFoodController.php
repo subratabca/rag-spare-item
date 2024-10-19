@@ -14,7 +14,7 @@ use Exception;
 use App\Models\Food;
 use App\Models\User;
 use App\Models\FoodImage;
-use App\Models\TermCondition;
+use GuzzleHttp\Client;
 
 
 class ClientFoodController extends Controller
@@ -73,6 +73,18 @@ class ClientFoodController extends Controller
             ]);
 
             $user_id = $request->header('id');
+            $address = $request->input('address');
+            $geoData = $this->getCoordinatesFromAddress($address)
+
+            if (!$geoData) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Unable to fetch coordinates for the provided address.'
+                ], 400);
+            }
+
+            $latitude = $geoData['latitude'];
+            $longitude = $geoData['longitude'];
 
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
@@ -100,6 +112,8 @@ class ClientFoodController extends Controller
                 'start_collection_time' => $request->input('start_collection_time'),
                 'end_collection_time' => $request->input('end_collection_time'),
                 'address' => $request->input('address'),
+                'latitude' => $latitude,
+                'longitude' => $longitude,
                 'accept_tnc' => $request->input('accept_tnc'),
                 'image' => $uploadPath,
                 'user_id' => $user_id
@@ -142,6 +156,32 @@ class ClientFoodController extends Controller
                 'message' => 'Food creation failed',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+
+    private function getCoordinatesFromAddress($address)
+    {
+        $client = new Client();
+        $apiKey = env('GOOGLE_MAPS_API_KEY');
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode($address) . "&key=" . $apiKey;
+
+        try {
+            $response = $client->get($url);
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            if ($data['status'] === 'OK') {
+                $location = $data['results'][0]['geometry']['location'];
+                return [
+                    'latitude' => $location['lat'],
+                    'longitude' => $location['lng'],
+                ];
+            }
+
+            return null;
+
+        } catch (Exception $e) {
+            return null;
         }
     }
 
@@ -213,8 +253,17 @@ class ClientFoodController extends Controller
 
             $user_id = $request->header('id');
             $food_id = $request->input('id');
-
             $food = Food::findOrFail($food_id);
+
+            $address = $request->input('address');
+            $geoData = $this->getCoordinatesFromAddress($address)
+
+            if (!$geoData) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Unable to fetch coordinates for the provided address.'
+                ], 400);
+            }
 
             if ($request->hasFile('image')) {
                 $large_image_path = base_path('public/upload/food/large/');
@@ -259,6 +308,8 @@ class ClientFoodController extends Controller
                 'start_collection_time' => $request->input('start_collection_time'),
                 'end_collection_time' => $request->input('end_collection_time'),
                 'address' => $request->input('address'),
+                'latitude' => $latitude,
+                'longitude' => $longitude,
                 'image' => $uploadPath
             ]);
 

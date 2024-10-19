@@ -14,6 +14,7 @@ use Exception;
 use App\Models\User;
 use App\Models\Food;
 use App\Models\FoodImage;
+use GuzzleHttp\Client;
 
 
 class FoodController extends Controller
@@ -71,6 +72,16 @@ class FoodController extends Controller
             ]);
 
             $user_id = $request->header('id');
+            $address = $request->input('address');
+            $geoData = $this->getCoordinatesFromAddress($address)
+
+            if (!$geoData) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Unable to fetch coordinates for the provided address.'
+                ], 400);
+            }
+
             $uploadPath = null;
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
@@ -95,6 +106,8 @@ class FoodController extends Controller
                 'start_collection_time' => $request->input('start_collection_time'),
                 'end_collection_time' => $request->input('end_collection_time'),
                 'address' => $request->input('address'),
+                'latitude' => $latitude,
+                'longitude' => $longitude,
                 'accept_tnc' => $request->input('accept_tnc'),
                 'image' => $uploadPath,
                 'user_id' => $user_id,
@@ -205,8 +218,17 @@ class FoodController extends Controller
 
             $user_id = $request->header('id');
             $food_id = $request->input('id');
-
             $food = Food::findOrFail($food_id);
+
+            $address = $request->input('address');
+            $geoData = $this->getCoordinatesFromAddress($address)
+
+            if (!$geoData) {
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => 'Unable to fetch coordinates for the provided address.'
+                ], 400);
+            }
 
             if ($request->hasFile('image')) {
                 $large_image_path = base_path('public/upload/food/large/');
@@ -251,6 +273,8 @@ class FoodController extends Controller
                 'start_collection_time' => $request->input('start_collection_time'),
                 'end_collection_time' => $request->input('end_collection_time'),
                 'address' => $request->input('address'),
+                'latitude' => $latitude,
+                'longitude' => $longitude,
                 'image' => $uploadPath
             ]);
 
