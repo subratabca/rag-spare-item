@@ -8,16 +8,14 @@
               <div class="p-2">
                 <div class="cursor-pointer">
                   <div class="row">
-                    <!-- Gallery effect-->
                     <div class="col-12">
                       <div id="gallery-wrapper">
-                        <!-- Main gallery -->
                         <div class="gallery-main">
-                          <img id="mainImage" src="" alt="Main Image" style="width: 100%; height: auto;" />
+                          <img id="mainImage" src="/upload/no_image.jpg" alt="Main Image" style="width: 100%; height: auto;" />
                         </div>
-                        <!-- Thumbnail gallery -->
+
                         <div class="gallery-thumbs mt-3" id="galleryThumbImages" style="display: flex; gap: 10px;">
-                          <!-- Thumbnails will be injected here -->
+
                         </div>
                       </div>
                     </div>
@@ -51,12 +49,13 @@
 
 
 <script>
-  let url = window.location.pathname;
-  let segments = url.split('/');
-  let id = segments[segments.length - 1];
-
   async function FoodDetailsInfo() {
+      showLoader();
       try {
+          let url = window.location.pathname;
+          let segments = url.split('/');
+          let id = segments[segments.length - 1];
+
           let res = await axios.get("/food-details-info/" + id);
           let data = res.data['data'];
 
@@ -90,6 +89,8 @@
 
       } catch (error) {
           console.error(error);
+      } finally{
+        hideLoader();
       }
   }
 
@@ -138,7 +139,7 @@
               errorToast("Request failed!");
           }
           console.error(error);
-      }
+      } 
   }
 </script>
 

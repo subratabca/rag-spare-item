@@ -76,11 +76,6 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/setting-list', 'SettingList');
     Route::get('/food-list', 'FoodList');
     Route::get('/search-food','searchFood');
-
-    //Route::get('/food-list/date/{date}','getAvailableFoodByDate');
-    //Route::get('/food-list-by-location', 'FoodListByLocation');
-    //Route::get('/food-list-location/date/{date}','getAvailableFoodByDate');
-    //Route::get('/search-food-by-location','searchFood');
 });
 
 Route::controller(PagesController::class)->group(function () {
@@ -296,7 +291,7 @@ Route::prefix('admin')->middleware([AdminTokenVerificationMiddleware::class])->g
         Route::get('/notification/list', 'NotificationPage')->name('admin.notifications');
         Route::get('/limited/notification/list', 'LimitedNotificationList');
         Route::get('/notification/list/info', 'NotificationList');
-        Route::get('/markAsRead', 'MarkAsRead')->name('markRead');
+        Route::get('/markAsRead', 'MarkAsRead')->name('admin.markRead');
         Route::delete('/delete/notification/{notificationId}', 'deleteNotification');
     });
 
@@ -394,7 +389,7 @@ Route::prefix('client')->middleware([ClientTokenVerificationMiddleware::class])-
         Route::get('/notification/list', 'NotificationPage')->name('client.notifications');
         Route::get('/limited/notification/list', 'LimitedNotificationList');
         Route::get('/notification/list/info', 'NotificationList');
-        Route::get('/markAsRead', 'MarkAsRead')->name('markRead');
+        Route::get('/markAsRead', 'MarkAsRead')->name('client.markRead');
         Route::delete('/delete/notification/{notificationId}', 'deleteNotification');
     });
 
@@ -423,9 +418,6 @@ Route::prefix('client')->middleware([ClientTokenVerificationMiddleware::class])-
 
         Route::get('/complain/list/by/customer/{customer_id}','ComplainListPageByCustomer');
         Route::get('/complain/list/by/customer/info/{customer_id}','ComplainListByCustomer');
-
-        Route::get('/client/list/by/customer/{customer_id}','ClientListPageByCustomer');
-        Route::get('/client/list/by/customer/info/{customer_id}','ClientListByCustomer');
     });
 
 });

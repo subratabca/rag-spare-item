@@ -7,7 +7,7 @@
           <div class="p-2">
             <div class="cursor-pointer">
                 <div class="gallery-main">
-                  <img id="image" src="" alt="Main Image" style="width: 100%; height: 400px;" />
+                  <img id="image" src="/upload/no_image.jpg" alt="Main Image" style="width: 100%; height: 400px;" />
                 </div>
             </div>
           </div>
@@ -239,6 +239,7 @@
 
 <script>
     async function AboutInfo() {
+        showLoader();
         try {
             let res = await axios.get("/about-page-info");
 
@@ -268,6 +269,8 @@
             } else {
                 errorToast("Failed to connect to the server");
             }
+        } finally{
+          hideLoader();
         }
     }
 </script>
